@@ -178,4 +178,31 @@ window.Utils = {
         var nama = ['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
         return nama[parseInt(bulan) - 1] || '-';
     }
+
+        /**
+     * Escape HTML untuk mencegah XSS
+     */
+    escapeHtml: function(str) {
+        if (!str) return '';
+        return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+    },
+
+    /**
+     * Baca parameter dari hash URL
+     * Contoh: #rekam-medis?antrian=ABC123 → { antrian: "ABC123" }
+     */
+    getHashParams: function() {
+        var hash = window.location.hash;
+        var params = {};
+        if (hash.indexOf('?') !== -1) {
+            var query = hash.split('?')[1];
+            if (query) {
+                query.split('&').forEach(function(pair) {
+                    var parts = pair.split('=');
+                    params[decodeURIComponent(parts[0])] = decodeURIComponent(parts[1] || '');
+                });
+            }
+        }
+        return params;
+    }
 };
