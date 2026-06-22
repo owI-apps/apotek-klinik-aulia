@@ -248,6 +248,8 @@ window.App = {
             'antrian':               AppAntrian,
             'rekam-medis':           AppRekamMedis,
             'resep':                 AppResep,
+            'transaksi':             AppTransaksi,
+            'pembelian':             AppPembelian,
             'pengaturan-profil':     AppPengaturanProfil,
             'pengaturan-pembagian':  AppPengaturanPembagian,
             'pengaturan-tindakan':   AppPengaturanTindakan,
