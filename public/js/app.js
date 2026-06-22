@@ -243,11 +243,15 @@ window.App = {
         // Cek apakah module-nya udah ada
         var moduleMap = {
             'dashboard':             AppDashboard,
+            'pasien':                AppPasien,
+            'obat':                  AppObat,
+            'antrian':               AppAntrian,
+            'rekam-medis':           AppRekamMedis,
+            'resep':                 AppResep,
             'pengaturan-profil':     AppPengaturanProfil,
             'pengaturan-pembagian':  AppPengaturanPembagian,
             'pengaturan-tindakan':   AppPengaturanTindakan,
-            'pengaturan-users':      AppPengaturanUsers,
-            // Module lainnya akan ditambah di phase selanjutnya
+            'pengaturan-users':      AppPengaturanUsers
         };
 
         var modul = moduleMap[hash];
