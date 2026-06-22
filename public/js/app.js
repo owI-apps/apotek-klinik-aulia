@@ -241,7 +241,7 @@ window.App = {
         Utils.showLoading('main-content');
 
         // Cek apakah module-nya udah ada
-        var moduleMap = {
+               var moduleMap = {
             'dashboard':             AppDashboard,
             'pasien':                AppPasien,
             'obat':                  AppObat,
@@ -250,6 +250,10 @@ window.App = {
             'resep':                 AppResep,
             'transaksi':             AppTransaksi,
             'pembelian':             AppPembelian,
+            'keuangan':              AppKeuangan,
+            'hutang':                AppHutang,
+            'pengeluaran':           AppPengeluaran,
+            'piutang':               AppPiutang,
             'pengaturan-profil':     AppPengaturanProfil,
             'pengaturan-pembagian':  AppPengaturanPembagian,
             'pengaturan-tindakan':   AppPengaturanTindakan,
