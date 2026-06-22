@@ -279,7 +279,7 @@ window.AppRekamMedis = {
         });
     },
 
-    /* =========================================
+       /* =========================================
        SIMPAN
        ========================================= */
     simpan: function() {
@@ -296,11 +296,16 @@ window.AppRekamMedis = {
         }
 
         var antrianIdField = document.getElementById('rm-antrian-id');
+        var hasAntrian = antrianIdField && antrianIdField.value;
+
+        var dokterNamaVal = document.getElementById('rm-dokter-nama-val').value;
+        var dokterIdVal = document.getElementById('rm-dokter-id').value;
+
         var obj = {
             pasienId:   document.getElementById('rm-pasien-id').value,
             pasienNama: document.getElementById('rm-pasien-nama-val').value,
-            dokterId:   document.getElementById('rm-dokter-id').value,
-            dokterNama: document.getElementById('rm-dokter-nama-val').value,
+            dokterId:   dokterIdVal,
+            dokterNama: dokterNamaVal,
             tanggal:    document.getElementById('rm-tanggal').value,
             keluhan:    keluhan,
             diagnosa:   document.getElementById('rm-diagnosa').value.trim(),
@@ -309,26 +314,28 @@ window.AppRekamMedis = {
             createdAt:  firebase.firestore.FieldValue.serverTimestamp()
         };
 
-        if (antrianIdField && antrianIdField.value) {
-            obj.antrianId = antrianIdField.value;
-            var antrianRef = db.collection('antrian').doc(antrianIdField.value).get();
-            var antrianData = null;
-            antrianRef.then(function(doc) {
-                if (doc.exists) antrianData = doc.data();
-            });
-            obj.noAntrian = antrianData ? antrianData.noAntrian : '';
+        // Kalau ada antrian, ambil noAntrian dulu (async yang benar)
+        var savePromise;
+        if (hasAntrian) {
+            savePromise = db.collection('antrian').doc(antrianIdField.value).get()
+                .then(function(antrianDoc) {
+                    if (antrianDoc.exists) {
+                        obj.antrianId = antrianIdField.value;
+                        obj.noAntrian = antrianDoc.data().noAntrian || '';
+                    }
+                    return db.collection('rekamMedis').add(obj);
+                });
+        } else {
+            savePromise = db.collection('rekamMedis').add(obj);
         }
 
-        db.collection('rekamMedis').add(obj)
-            .then(function(docRef) {
-                Utils.toast('Rekam medis berhasil disimpan', 'success');
-                Utils.closeModal();
-                AppRekamMedis.load();
-            })
-            .catch(function(err) {
-                Utils.toast('Gagal menyimpan: ' + err.message, 'error');
-                btn.disabled = false;
-                btn.textContent = 'Simpan';
-            });
+        savePromise.then(function() {
+            Utils.toast('Rekam medis berhasil disimpan', 'success');
+            Utils.closeModal();
+            AppRekamMedis.load();
+        }).catch(function(err) {
+            Utils.toast('Gagal menyimpan: ' + err.message, 'error');
+            btn.disabled = false;
+            btn.textContent = 'Simpan';
+        });
     }
-};
