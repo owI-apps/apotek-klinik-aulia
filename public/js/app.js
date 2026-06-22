@@ -241,7 +241,7 @@ window.App = {
         Utils.showLoading('main-content');
 
         // Cek apakah module-nya udah ada
-               var moduleMap = {
+                       var moduleMap = {
             'dashboard':             AppDashboard,
             'pasien':                AppPasien,
             'obat':                  AppObat,
@@ -254,12 +254,15 @@ window.App = {
             'hutang':                AppHutang,
             'pengeluaran':           AppPengeluaran,
             'piutang':               AppPiutang,
+            'karyawan':              AppKaryawan,
+            'payroll':               AppPayroll,
+            'laporan':               AppLaporan,
             'pengaturan-profil':     AppPengaturanProfil,
             'pengaturan-pembagian':  AppPengaturanPembagian,
             'pengaturan-tindakan':   AppPengaturanTindakan,
             'pengaturan-users':      AppPengaturanUsers
         };
-
+        
         var modul = moduleMap[hash];
         if (modul && modul.render) {
             content.innerHTML = modul.render();
