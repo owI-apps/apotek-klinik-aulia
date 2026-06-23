@@ -1,30 +1,18 @@
 /**
- * Service Worker - untuk PWA (offline support dasar)
+ * Service Worker - Versi Tangguh
+ * Strategi: Cache on Fetch (bukan pre-cache)
+ * Setiap file yang berhasil dibuka akan otomatis di-cache
+ * Tidak ada addAll() yang bisa gagal
  */
 
-var CACHE_NAME = 'apotek-klinik-v1';
-var URLS_TO_CACHE = [
-    '/',
-    '/index.html',
-    '/css/style.css',
-    '/js/utils.js',
-    '/js/app.js',
-    '/js/auth.js',
-    '/js/dashboard.js',
-    '/manifest.json'
-];
+var CACHE_NAME = 'apotek-klinik-v2';
 
-// Install: simpan file ke cache
+// Install: langsung aktif tanpa pre-cache
 self.addEventListener('install', function(event) {
-    event.waitUntil(
-        caches.open(CACHE_NAME).then(function(cache) {
-            return cache.addAll(URLS_TO_CACHE);
-        })
-    );
     self.skipWaiting();
 });
 
-// Activate: hapus cache lama
+// Activate: hapus cache versi lama
 self.addEventListener('activate', function(event) {
     event.waitUntil(
         caches.keys().then(function(names) {
@@ -40,32 +28,40 @@ self.addEventListener('activate', function(event) {
     self.clients.claim();
 });
 
-// Fetch: coba cache dulu, kalau nggak ada baru ke network
+// Fetch: cache setiap request yang berhasil
 self.addEventListener('fetch', function(event) {
-    // Lewati request ke Firebase (nggak bisa di-cache)
-    if (event.request.url.indexOf('firebaseio.com') !== -1 ||
-        event.request.url.indexOf('googleapis.com') !== -1 ||
-        event.request.url.indexOf('google.com') !== -1) {
+    // Lewati request ke Firebase (gak boleh di-cache)
+    var url = event.request.url;
+    if (url.indexOf('firebaseio.com') !== -1 ||
+        url.indexOf('googleapis.com') !== -1 ||
+        url.indexOf('google.com') !== -1) {
         return;
     }
 
+    // Hanya cache request GET dari domain sendiri
+    if (event.request.method !== 'GET') return;
+
     event.respondWith(
-        caches.match(event.request).then(function(response) {
-            return response || fetch(event.request).then(function(fetchResponse) {
-                // Simpan response baru ke cache
-                if (fetchResponse.status === 200) {
-                    var responseClone = fetchResponse.clone();
-                    caches.open(CACHE_NAME).then(function(cache) {
-                        cache.put(event.request, responseClone);
-                    });
+        caches.open(CACHE_NAME).then(function(cache) {
+            return cache.match(event.request).then(function(response) {
+                // Kalau sudah ada di cache, pakai cache
+                if (response) {
+                    return response;
                 }
-                return fetchResponse;
+                // Kalau belum ada, ambil dari network
+                return fetch(event.request).then(function(networkResponse) {
+                    // Kalau berhasil & status 200, simpan ke cache
+                    if (networkResponse && networkResponse.status === 200) {
+                        cache.put(event.request, networkResponse.clone());
+                    }
+                    return networkResponse;
+                }).catch(function() {
+                    // Kalau offline & tidak ada di cache
+                    if (event.request.mode === 'navigate') {
+                        return caches.match('/index.html');
+                    }
+                });
             });
-        }).catch(function() {
-            // Kalau offline dan nggak ada di cache
-            if (event.request.mode === 'navigate') {
-                return caches.match('/index.html');
-            }
         })
     );
 });
