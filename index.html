@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Apotek & Klinik</title>
+    
+    <!-- PWA Manifest -->
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#1e40af">
+    
+    <!-- Tailwind CSS via CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: { 50:'#eff6ff',100:'#dbeafe',200:'#bfdbfe',300:'#93c5fd',400:'#60a5fa',500:'#3b82f6',600:'#2563eb',700:'#1d4ed8',800:'#1e40af',900:'#1e3a8a' },
+                        accent:  { 50:'#f0fdfa',100:'#ccfbf1',200:'#99f6e4',300:'#5eead4',400:'#2dd4bf',500:'#14b8a6',600:'#0d9488',700:'#0f766e',800:'#115e59',900:'#134e4a' }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+
+    <!-- Firebase SDK (Compat - tanpa build tool) -->
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-storage-compat.js"></script>
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body class="bg-gray-50 text-gray-800 min-h-screen">
+
+    <!-- ============================================ -->
+    <!-- HALAMAN LOGIN (muncul dulu sebelum masuk app) -->
+    <!-- ============================================ -->
+    <div id="page-login" class="hidden min-h-screen flex items-center justify-center bg-gradient-to-br from-primary-800 to-primary-900 p-4">
+        <div id="login-content" class="w-full max-w-md"></div>
+    </div>
+
+    <!-- ============================================ -->
+    <!-- SHELL UTAMA APP (sidebar + content)           -->
+    <!-- ============================================ -->
+    <div id="app-shell" class="hidden min-h-screen flex">
+        
+        <!-- Overlay untuk mobile -->
+        <div id="sidebar-overlay" class="fixed inset-0 bg-black/40 z-30 hidden lg:hidden" onclick="App.toggleSidebar()"></div>
+
+        <!-- SIDEBAR -->
+        <aside id="sidebar" class="fixed lg:static inset-y-0 left-0 z-40 w-64 bg-white border-r border-gray-200 transform -translate-x-full lg:translate-x-0 transition-transform duration-300 flex flex-col">
+            <!-- Header Sidebar -->
+            <div class="p-4 border-b border-gray-200">
+                <h1 id="sidebar-title" class="text-lg font-bold text-primary-700 truncate">Apotek & Klinik</h1>
+                <p id="sidebar-subtitle" class="text-xs text-gray-400">Sistem Manajemen</p>
+            </div>
+            <!-- Menu -->
+            <nav id="sidebar-menu" class="flex-1 overflow-y-auto p-3 space-y-1"></nav>
+            <!-- Footer Sidebar -->
+            <div class="p-3 border-t border-gray-200">
+                <div id="user-info" class="flex items-center gap-2 mb-2">
+                    <div class="w-8 h-8 rounded-full bg-primary-100 flex items-center justify-center">
+                        <i data-lucide="user" class="w-4 h-4 text-primary-600"></i>
+                    </div>
+                    <div class="flex-1 min-w-0">
+                        <p id="user-name" class="text-sm font-medium truncate">-</p>
+                        <p id="user-role" class="text-xs text-gray-400 truncate">-</p>
+                    </div>
+                </div>
+                <button onclick="App.logout()" class="w-full flex items-center gap-2 px-3 py-2 text-sm text-red-600 hover:bg-red-50 rounded-lg transition">
+                    <i data-lucide="log-out" class="w-4 h-4"></i>
+                    Keluar
+                </button>
+            </div>
+        </aside>
+
+        <!-- MAIN CONTENT -->
+        <main class="flex-1 flex flex-col min-h-screen lg:ml-0">
+            <!-- Top Bar (mobile) -->
+            <header class="lg:hidden flex items-center gap-3 p-4 bg-white border-b border-gray-200 sticky top-0 z-20">
+                <button onclick="App.toggleSidebar()" class="p-2 hover:bg-gray-100 rounded-lg">
+                    <i data-lucide="menu" class="w-5 h-5"></i>
+                </button>
+                <h1 id="topbar-title" class="text-lg font-semibold text-primary-700">Dashboard</h1>
+            </header>
+            <!-- Content Area -->
+            <div id="main-content" class="flex-1 p-4 lg:p-6 overflow-y-auto"></div>
+        </main>
+    </div>
+
+    <!-- ============================================ -->
+    <!-- TOAST NOTIFICATION                           -->
+    <!-- ============================================ -->
+    <div id="toast-container" class="fixed top-4 right-4 z-50 space-y-2"></div>
+
+    <!-- ============================================ -->
+    <!-- MODAL CONTAINER                              -->
+    <!-- ============================================ -->
+    <div id="modal-backdrop" class="fixed inset-0 bg-black/50 z-50 hidden flex items-center justify-center p-4">
+        <div id="modal-content" class="bg-white rounded-2xl shadow-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto"></div>
+    </div>
+
+ <!-- App Modules (URUTAN PENTING — dependensi harus duluan) -->
+    <script src="js/utils.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/dashboard.js"></script>
+    <script src="js/obat.js"></script>
+    <script src="js/pasien.js"></script>
+    <script src="js/antrian.js"></script>
+    <script src="js/rekam-medis.js"></script>
+    <script src="js/resep.js"></script>
+    <script src="js/transaksi.js"></script>
+    <script src="js/pembelian.js"></script>
+    <script src="js/keuangan.js"></script>
+    <script src="js/hutang.js"></script>
+    <script src="js/pengeluaran.js"></script>
+    <script src="js/piutang.js"></script>
+    <script src="js/karyawan.js"></script>
+    <script src="js/payroll.js"></script>
+    <script src="js/laporan.js"></script>
+    <script src="js/pengaturan-profil.js"></script>
+    <script src="js/pengaturan-pembagian.js"></script>
+    <script src="js/pengaturan-tindakan.js"></script>
+    <script src="js/pengaturan-users.js"></script>
+    <script src="js/app.js"></script>
+
+    <!-- Register Service Worker -->
+    <script>
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('sw.js').catch(function() {});
+        }
+    </script>
+</body>
+</html>
+</html>
